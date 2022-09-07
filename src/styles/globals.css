@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: "Sofia Pro";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/Sofia Pro Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Sofia Pro";
+  font-style: light;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/fonts/Sofia Pro Light.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Sofia Pro";
+  font-style: bold;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/Sofia Pro Bold.woff") format("woff");
+}
+
+::selection {
+  background-color: #47a3f3;
+  color: #fefefe;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+#__next {
+  @apply bg-gray-50 dark:bg-gray-900;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
