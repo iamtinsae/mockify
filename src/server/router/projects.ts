@@ -31,6 +31,13 @@ export const projectsRouter = createProtectedRouter()
           slug,
           creatorId: ctx.session.user.id,
         },
+        include: {
+          resources: {
+            include: {
+              endPoints: true,
+            },
+          },
+        },
       });
 
       return project;
