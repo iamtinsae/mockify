@@ -6,7 +6,6 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/solid";
 import cn from "classnames";
-import { useRouter } from "next/router";
 
 type NewRouteModalProps = {
   open: boolean;
@@ -20,18 +19,24 @@ export default function NewRouteModal({
   projectSlug,
 }: NewRouteModalProps) {
   const cancelButtonRef = useRef(null);
-  const router = useRouter();
+  const utils = trpc.useContext();
   const [resourceName, setResourceName] = useState("");
-  const { mutateAsync, isSuccess, isLoading, isError } =
-    trpc.useMutation("resources.create");
+  const { mutateAsync, isSuccess, isLoading, isError } = trpc.useMutation(
+    "resources.create",
+    {
+      onSuccess() {
+        utils.invalidateQueries(["projects.getMyProject"]);
+      },
+    }
+  );
 
   const handleSubmit = async () => {
     try {
-      const resource = await mutateAsync({
+      await mutateAsync({
         name: resourceName,
         projectSlug,
       });
-      router.push(`/dashboard/${projectSlug}/${resource.name}/`);
+      trpc;
     } catch {}
   };
 
