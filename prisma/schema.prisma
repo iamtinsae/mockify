@@ -82,7 +82,7 @@ model Resource {
 model EndPoint {
     id         String   @id @default(cuid())
     route      String
-    method     Int
+    method     String
     resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
     resourceId String
     schemas    Schema[]
