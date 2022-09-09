@@ -10,6 +10,7 @@ export const resourcesRoute = createProtectedRouter().mutation("create", {
     const project = await ctx.prisma.project.findFirstOrThrow({
       where: {
         slug: input.projectSlug,
+        creatorId: ctx.session.user.id,
       },
     });
 
