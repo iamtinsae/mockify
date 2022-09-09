@@ -62,7 +62,7 @@ model VerificationToken {
 model Project {
     id          String     @id @default(cuid())
     name        String
-    slug        String
+    slug        String     @unique
     description String
     creatorId   String
     creator     User       @relation(fields: [creatorId], references: [id], onDelete: Cascade)
@@ -75,6 +75,8 @@ model Resource {
     endPoints EndPoint[]
     project   Project?   @relation(fields: [projectId], references: [id])
     projectId String?
+
+    @@unique([projectId, name])
 }
 
 model EndPoint {
