@@ -1,45 +1,63 @@
 import { Fragment, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { trpc } from "../utils/trpc";
+import { inferMutationInput, trpc } from "../utils/trpc";
 import {
   ExclamationCircleIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/solid";
 import cn from "classnames";
 
-type NewRouteModalProps = {
+type NewEndPointModalProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  projectSlug: string;
+  resourceId: string;
+  resourceName: string;
+  afterLeave: () => void;
 };
 
-export default function NewRouteModal({
+const methods = ["GET", "POST", "PUT", "PATCH", "DELETE"];
+
+export default function NewEndPointModal({
   open,
   setOpen,
-  projectSlug,
-}: NewRouteModalProps) {
+  resourceId,
+  resourceName,
+  afterLeave,
+}: NewEndPointModalProps) {
   const cancelButtonRef = useRef(null);
   const utils = trpc.useContext();
-  const [resourceName, setResourceName] = useState("");
+  const [route, setRoute] = useState("");
+  const [method, setMethod] =
+    useState<inferMutationInput<"endpoints.create">["method"]>("GET");
   const { mutateAsync, isSuccess, isLoading, isError, reset } =
-    trpc.useMutation("resources.create", {
-      onSuccess() {
-        utils.invalidateQueries(["projects.getMyProject"]);
+    trpc.useMutation("endpoints.create", {
+      onSuccess: () => {
+        utils.invalidateQueries("projects.getMyProject");
       },
     });
 
   const handleSubmit = async () => {
     try {
       await mutateAsync({
-        name: resourceName,
-        projectSlug,
+        route,
+        method,
+        resourceId,
       });
       setOpen(false);
     } catch {}
   };
 
   return (
-    <Transition.Root show={open} as={Fragment} afterLeave={reset}>
+    <Transition.Root
+      show={open}
+      as={Fragment}
+      afterLeave={() => {
+        reset();
+        setRoute("");
+        setMethod("GET");
+        afterLeave();
+      }}
+    >
       <Dialog
         as="div"
         className="relative z-10"
@@ -76,45 +94,71 @@ export default function NewRouteModal({
                         as="h3"
                         className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
                       >
-                        Create New Resource
+                        Create New EndPoint
                       </Dialog.Title>
                       <div className="mt-2">
                         <div>
                           <label
-                            htmlFor="resource-name"
+                            htmlFor="route"
                             className="block text-sm font-medium text-gray-700 dark:text-gray-200"
                           >
-                            Resource Name
+                            Route
                           </label>
                           <div className="mt-1">
                             <input
                               type="text"
-                              name="resource-name"
-                              id="resource-name"
-                              value={resourceName}
-                              onChange={(e) => setResourceName(e.target.value)}
+                              name="route"
+                              id="route"
+                              value={route}
+                              onChange={(e) => setRoute(e.target.value)}
                               className="shadow-sm focus:ring-gray-800 focus:border-gray-500 block w-full sm:text-sm border-gray-300 dark:border-gray-900 rounded-md dark:bg-gray-500 dark:bg-opacity-20 focus:dark:bg-opacity-10 text-gray-200"
-                              placeholder="users"
-                              aria-describedby="resource-name-description"
+                              placeholder="/create/"
+                              aria-describedby="route-description"
                             />
                           </div>
                           <p
                             className="mt-2 text-sm text-gray-500 dark:text-gray-400"
-                            id="resource-description"
+                            id="route-description"
                           >
-                            It will be used in the url e.g{" "}
                             <code>
-                              {resourceName ? `/${resourceName}/` : "/users/"}
+                              /{resourceName}/
+                              {route !== "/" ? route.replace("/", "") : ""}
                             </code>
-                            .
                           </p>
+                        </div>
+
+                        <div className="mt-4">
+                          <label
+                            htmlFor="method"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Method
+                          </label>
+                          <select
+                            id="method"
+                            name="method"
+                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                            defaultValue="GET"
+                            onChange={(e) =>
+                              setMethod(
+                                e.target
+                                  .value as inferMutationInput<"endpoints.create">["method"]
+                              )
+                            }
+                          >
+                            {methods.map((m) => (
+                              <option key={m} value={m}>
+                                {m}
+                              </option>
+                            ))}
+                          </select>
                         </div>
 
                         <div className="mt-4">
                           {isError ? (
                             <div className="text-red-600 py-2">
                               <ExclamationCircleIcon className="h-6 inline-block mr-2" />
-                              Failed to create resource. Please try again!
+                              Failed to create endpoint. Please try again!
                             </div>
                           ) : null}
                         </div>
@@ -151,7 +195,7 @@ export default function NewRouteModal({
                             fill="currentFill"
                           />
                         </svg>
-                        <span>Creating Resource</span>
+                        <span>Creating Endpoint</span>
                       </div>
                     ) : isSuccess ? (
                       <div className="flex items-center">
@@ -159,7 +203,7 @@ export default function NewRouteModal({
                         <span>Created Successfully!</span>
                       </div>
                     ) : (
-                      <span>Create Resource</span>
+                      <span>Create Endpoint</span>
                     )}
                   </button>
                   <button
