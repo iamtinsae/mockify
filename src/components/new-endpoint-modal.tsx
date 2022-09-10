@@ -26,6 +26,7 @@ export default function NewEndPointModal({
 }: NewEndPointModalProps) {
   const cancelButtonRef = useRef(null);
   const utils = trpc.useContext();
+  const [name, setName] = useState("");
   const [route, setRoute] = useState("");
   const [method, setMethod] =
     useState<inferMutationInput<"endpoints.create">["method"]>("GET");
@@ -39,6 +40,7 @@ export default function NewEndPointModal({
   const handleSubmit = async () => {
     try {
       await mutateAsync({
+        name,
         route,
         method,
         resourceId,
@@ -53,6 +55,7 @@ export default function NewEndPointModal({
       as={Fragment}
       afterLeave={() => {
         reset();
+        setName("");
         setRoute("");
         setMethod("GET");
         afterLeave();
@@ -98,6 +101,27 @@ export default function NewEndPointModal({
                       </Dialog.Title>
                       <div className="mt-2">
                         <div>
+                          <label
+                            htmlFor="name"
+                            className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                          >
+                            Name
+                          </label>
+                          <div className="mt-1">
+                            <input
+                              type="text"
+                              name="name"
+                              id="name"
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              className="shadow-sm focus:ring-gray-800 focus:border-gray-500 block w-full sm:text-sm border-gray-300 dark:border-gray-900 rounded-md dark:bg-gray-500 dark:bg-opacity-20 focus:dark:bg-opacity-10 text-gray-200"
+                              placeholder="Create User"
+                              aria-describedby="name-description"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-4">
                           <label
                             htmlFor="route"
                             className="block text-sm font-medium text-gray-700 dark:text-gray-200"
