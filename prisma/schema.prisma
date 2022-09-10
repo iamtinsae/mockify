@@ -81,6 +81,7 @@ model Resource {
 
 model EndPoint {
     id         String   @id @default(cuid())
+    name       String
     route      String
     method     String
     resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
