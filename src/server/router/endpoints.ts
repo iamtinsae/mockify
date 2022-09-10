@@ -3,6 +3,7 @@ import { createProtectedRouter } from "./context";
 
 export const endPointsRouter = createProtectedRouter().mutation("create", {
   input: z.object({
+    name: z.string(),
     route: z.string(),
     resourceId: z.string(),
     method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
@@ -19,6 +20,7 @@ export const endPointsRouter = createProtectedRouter().mutation("create", {
 
     const endPoint = await ctx.prisma.endPoint.create({
       data: {
+        name: input.name,
         route: input.route,
         method: input.method,
         resourceId: resource.id,
