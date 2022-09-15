@@ -6,6 +6,10 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/solid";
 import cn from "classnames";
+import {
+  allowed_endpoint_methods,
+  allowed_schema_types,
+} from "../lib/validation";
 
 type NewEndPointModalProps = {
   open: boolean;
@@ -14,8 +18,6 @@ type NewEndPointModalProps = {
   resourceName: string;
   afterLeave: () => void;
 };
-
-const methods = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
 export default function NewEndPointModal({
   open,
@@ -27,15 +29,93 @@ export default function NewEndPointModal({
   const cancelButtonRef = useRef(null);
   const utils = trpc.useContext();
   const [name, setName] = useState("");
-  const [route, setRoute] = useState("");
+  const [route, setRoute] = useState("/");
   const [method, setMethod] =
-    useState<inferMutationInput<"endpoints.create">["method"]>("GET");
+    useState<typeof allowed_endpoint_methods[number]>("GET");
   const { mutateAsync, isSuccess, isLoading, isError, reset } =
     trpc.useMutation("endpoints.create", {
-      onSuccess: () => {
-        utils.invalidateQueries("projects.getMyProject");
-      },
+      onSuccess: () => utils.invalidateQueries("projects.getMyProject"),
     });
+  const [schemas, setSchemas] = useState<
+    Array<{
+      name: string;
+      type: typeof allowed_schema_types[number];
+    }>
+  >([]);
+
+  const removeSchema = (idx: number) => {
+    const schemasCopy = Array.from(schemas);
+    schemasCopy.splice(idx, 1);
+    setSchemas(schemasCopy);
+  };
+
+  const addSchema = () => {
+    setSchemas([
+      ...schemas,
+      {
+        name: "",
+        type: "ID",
+      },
+    ]);
+  };
+
+  const renderSchemasTable = () =>
+    schemas.map((schema, idx) => (
+      <tr key={`schema-${idx}`}>
+        <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">
+          {idx + 1}
+        </td>
+        <td className="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900">
+          <input
+            type="text"
+            value={schema.name}
+            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+            onChange={(e) => {
+              const schemaCopy = Array.from(schemas);
+              schemaCopy.splice(idx, 1, {
+                name: e.target.value,
+                type: schemas[idx]?.type ?? "ID",
+              });
+              setSchemas(schemaCopy);
+            }}
+          />
+        </td>
+        <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-900">
+          <div>
+            <select
+              id="location"
+              name="location"
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              defaultValue={allowed_schema_types[0]}
+              value={schema.type ?? "ID"}
+              onChange={(e) => {
+                const schemaCopy = Array.from(schemas);
+                schemaCopy.splice(idx, 1, {
+                  type: e.target.value as typeof allowed_schema_types[number],
+                  name: schemas[idx]?.name ?? "",
+                });
+                setSchemas(schemaCopy);
+              }}
+            >
+              {allowed_schema_types.map((schema_type) => (
+                <option key={schema_type} value={schema_type}>
+                  {schema_type}
+                </option>
+              ))}
+            </select>
+          </div>
+        </td>
+        <td className="relative whitespace-nowrap py-2 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+          <a
+            href="#"
+            className="text-indigo-600 hover:text-indigo-900"
+            onClick={() => removeSchema(idx)}
+          >
+            Remove
+          </a>
+        </td>
+      </tr>
+    ));
 
   const handleSubmit = async () => {
     try {
@@ -43,6 +123,7 @@ export default function NewEndPointModal({
         name,
         route,
         method,
+        schemas,
         resourceId,
       });
       setOpen(false);
@@ -58,6 +139,7 @@ export default function NewEndPointModal({
         setName("");
         setRoute("");
         setMethod("GET");
+        setSchemas([]);
         afterLeave();
       }}
     >
@@ -89,7 +171,7 @@ export default function NewEndPointModal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-500 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-500 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
                 <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="">
                     <div className="mt-3 text-center sm:mt-0 mx-4 sm:text-left">
@@ -144,6 +226,7 @@ export default function NewEndPointModal({
                             className="mt-2 text-sm text-gray-500 dark:text-gray-400"
                             id="route-description"
                           >
+                            Route can not be empty.
                             <code>
                               /{resourceName}/
                               {route !== "/" ? route.replace("/", "") : ""}
@@ -170,12 +253,55 @@ export default function NewEndPointModal({
                               )
                             }
                           >
-                            {methods.map((m) => (
+                            {allowed_endpoint_methods.map((m) => (
                               <option key={m} value={m}>
                                 {m}
                               </option>
                             ))}
                           </select>
+                        </div>
+
+                        <div className="mt-4">
+                          <button
+                            type="button"
+                            className="my-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+                            onClick={addSchema}
+                          >
+                            Add Schema
+                          </button>
+                          <table className="min-w-full divide-y divide-gray-300">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th
+                                  scope="col"
+                                  className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                                >
+                                  #
+                                </th>
+                                <th
+                                  scope="col"
+                                  className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                >
+                                  Name
+                                </th>
+                                <th
+                                  scope="col"
+                                  className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                >
+                                  Type
+                                </th>
+                                <th
+                                  scope="col"
+                                  className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-6"
+                                >
+                                  <span className="sr-only">Edit</span>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200 bg-white">
+                              {renderSchemasTable()}
+                            </tbody>
+                          </table>
                         </div>
 
                         <div className="mt-4">
