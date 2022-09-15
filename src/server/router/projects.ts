@@ -46,4 +46,13 @@ export const projectsRouter = createProtectedRouter()
 
       return project;
     },
+  })
+  .query("getAllMyProjects", {
+    async resolve({ ctx }) {
+      return await ctx.prisma.project.findMany({
+        where: {
+          creatorId: ctx.session.user.id,
+        },
+      });
+    },
   });
