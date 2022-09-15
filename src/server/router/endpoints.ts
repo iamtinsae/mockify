@@ -8,7 +8,7 @@ import { createProtectedRouter } from "./context";
 export const endPointsRouter = createProtectedRouter().mutation("create", {
   input: z.object({
     name: z.string(),
-    route: z.string(),
+    route: z.string().startsWith("/"),
     schemas: z.array(
       z.object({
         name: z.string(),
