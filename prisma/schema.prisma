@@ -92,7 +92,7 @@ model EndPoint {
 }
 
 model Schema {
-    id         String   @id
+    id         String   @id @default(cuid())
     name       String
     type       String
     EndPoint   EndPoint @relation(fields: [endPointId], references: [id])
