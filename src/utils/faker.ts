@@ -1,12 +1,5 @@
-import { z } from "zod";
-import { allowed_schema_types } from "../lib/validation";
 import { faker } from "@faker-js/faker";
 import { Schema } from "@prisma/client";
-
-const schemaType = z.object({
-  name: z.string(),
-  type: z.enum(allowed_schema_types),
-});
 
 const generateFakeFromSchema = (schema: Schema) => {
   if (schema.type === "ADDRESS") {
