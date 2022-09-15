@@ -1,13 +1,12 @@
-import type { NextPage, GetServerSidePropsContext } from "next";
-import Head from "next/head";
-import { useState, Fragment, useEffect } from "react";
-import LoadingOverlay from "../../components/loading-overlay";
-import NewRouteModal from "../../components/new-resource-modal";
-import { trpc } from "../../utils/trpc";
 import cn from "classnames";
-import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
-import NewEndPointModal from "../../components/new-endpoint-modal";
+import Head from "next/head";
 import { Resource } from "@prisma/client";
+import React, { useState, Fragment, useEffect } from "react";
+import type { NextPage, GetServerSidePropsContext } from "next";
+
+import { trpc } from "../../utils/trpc";
+import LoadingOverlay from "../../components/loading-overlay";
+import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 
 export const getServerSideProps = (context: GetServerSidePropsContext) => {
   const { "project-slug": slug } = context.query;
@@ -15,6 +14,13 @@ export const getServerSideProps = (context: GetServerSidePropsContext) => {
     props: { slug: slug?.toString() },
   };
 };
+
+const NewResourceModal = React.lazy(
+  () => import("../../components/new-resource-modal")
+);
+const NewEndPointModal = React.lazy(
+  () => import("../../components/new-endpoint-modal")
+);
 
 type ProjectPageProps = { slug: string };
 
@@ -28,12 +34,10 @@ const ProjectPage: NextPage<ProjectPageProps> = (props) => {
       slug: props.slug,
     },
   ]);
-  const { mutateAsync, isLoading: isMutationLoading } = trpc.useMutation(
+  const { mutateAsync, isLoading: isMutating } = trpc.useMutation(
     "resources.delete",
     {
-      onSuccess: () => {
-        utils.invalidateQueries("projects.getMyProject");
-      },
+      onSuccess: () => utils.invalidateQueries("projects.getMyProject"),
     }
   );
   const [selectedResource, setSelectedResource] = useState<Resource | null>(
@@ -57,7 +61,7 @@ const ProjectPage: NextPage<ProjectPageProps> = (props) => {
       <Head>
         <title>Mockify : {data?.name ?? "API mocking made easy."}</title>
       </Head>
-      <LoadingOverlay visible={isLoading || isMutationLoading} />
+      <LoadingOverlay visible={isLoading || isMutating} />
 
       <main className="max-w-3xl p-8 mx-auto w-full">
         <div className="md:flex md:items-center md:justify-between">
@@ -82,12 +86,11 @@ const ProjectPage: NextPage<ProjectPageProps> = (props) => {
             </button>
           </div>
         </div>
-        <NewRouteModal
+        <NewResourceModal
           projectSlug={props.slug}
           open={newRouteModalOpen}
           setOpen={setNewRouteModalOpen}
         />
-
         <NewEndPointModal
           resourceName={selectedResource?.name || ""}
           resourceId={selectedResource?.id || ""}
@@ -181,7 +184,7 @@ const ProjectPage: NextPage<ProjectPageProps> = (props) => {
                                 {endPoint.method}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                {3}
+                                {endPoint.schemas.length ?? 0}
                               </td>
                               <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                 <a
