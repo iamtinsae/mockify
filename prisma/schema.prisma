@@ -95,6 +95,6 @@ model Schema {
     id         String   @id @default(cuid())
     name       String
     type       String
-    EndPoint   EndPoint @relation(fields: [endPointId], references: [id])
+    EndPoint   EndPoint @relation(fields: [endPointId], references: [id], onDelete: Cascade)
     endPointId String
 }
