@@ -34,7 +34,11 @@ export const projectsRouter = createProtectedRouter()
         include: {
           resources: {
             include: {
-              endPoints: true,
+              endPoints: {
+                include: {
+                  schemas: true,
+                },
+              },
             },
           },
         },
