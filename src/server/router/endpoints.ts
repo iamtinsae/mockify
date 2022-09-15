@@ -5,6 +5,20 @@ export const endPointsRouter = createProtectedRouter().mutation("create", {
   input: z.object({
     name: z.string(),
     route: z.string(),
+    schemas: z.array(
+      z.object({
+        name: z.string(),
+        type: z.enum([
+          "ID",
+          "NAME",
+          "ADDRESS",
+          "PHONE_NUMBER",
+          "AGE",
+          "DATE",
+          "WORD",
+        ]),
+      })
+    ),
     resourceId: z.string(),
     method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
   }),
@@ -26,6 +40,17 @@ export const endPointsRouter = createProtectedRouter().mutation("create", {
         resourceId: resource.id,
       },
     });
+
+    input.schemas.forEach(
+      async (schema) =>
+        await ctx.prisma.schema.create({
+          data: {
+            name: schema.name,
+            type: schema.type,
+            endPointId: endPoint.id,
+          },
+        })
+    );
 
     return endPoint;
   },
