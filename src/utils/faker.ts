@@ -1,12 +1,11 @@
 import { faker } from "@faker-js/faker";
-import { Schema } from "@prisma/client";
+import type { Schema } from "@prisma/client";
 
-const generateFakeFromSchema = (schema: Schema) => {
-  if (schema.type === "ADDRESS") {
-    return faker.address.city();
-  }
+const generateFakeFromSchema = (type: string) => {
+  switch (type) {
+    case "ADDRESS":
+      return faker.address.city();
 
-  switch (schema.type) {
     case "AGE":
       return faker.datatype.number({ min: 10, max: 90 });
 
@@ -15,6 +14,7 @@ const generateFakeFromSchema = (schema: Schema) => {
 
     case "ID":
       return faker.database.mongodbObjectId();
+
     case "NAME":
       return faker.name.fullName();
 
@@ -25,15 +25,15 @@ const generateFakeFromSchema = (schema: Schema) => {
       return faker.word.noun();
 
     default:
-      throw Error("Unknown schema type given.");
+      throw Error("Given type is not supported.");
   }
 };
 
 export const generateFake = (schemas: Array<Schema>) => {
-  const fake: { [key: string]: unknown } = {};
+  const fakeData: { [key: string]: unknown } = {};
   schemas.forEach(
-    (schema) => (fake[schema.name] = generateFakeFromSchema(schema))
+    (schema) => (fakeData[schema.name] = generateFakeFromSchema(schema.type))
   );
 
-  return fake;
+  return fakeData;
 };
