@@ -1,22 +1,22 @@
 import { z } from "zod";
 import {
-  allowed_endpoint_methods,
-  allowed_schema_types,
+  allowedEndPointMethods,
+  allowedSchemaTypes,
 } from "../../lib/validation";
 import { createProtectedRouter } from "./context";
 
 export const endPointsRouter = createProtectedRouter().mutation("create", {
   input: z.object({
     name: z.string(),
-    route: z.string().startsWith("/"),
+    route: z.string().default("/"),
     schemas: z.array(
       z.object({
         name: z.string(),
-        type: z.enum(allowed_schema_types),
+        type: z.enum(allowedSchemaTypes),
       })
     ),
     resourceId: z.string(),
-    method: z.enum(allowed_endpoint_methods),
+    method: z.enum(allowedEndPointMethods),
   }),
   async resolve({ ctx, input }) {
     const resource = await ctx.prisma.resource.findFirstOrThrow({

@@ -1,4 +1,4 @@
-export const allowed_schema_types = [
+export const allowedSchemaTypes = [
   "ID",
   "NAME",
   "ADDRESS",
@@ -8,7 +8,7 @@ export const allowed_schema_types = [
   "WORD",
 ] as const;
 
-export const allowed_endpoint_methods = [
+export const allowedEndPointMethods = [
   "GET",
   "POST",
   "PUT",
