@@ -93,9 +93,10 @@ export default function NewRouteModal({
                               id="resource-name"
                               value={resourceName}
                               onChange={(e) => setResourceName(e.target.value)}
-                              className="shadow-sm focus:ring-gray-800 focus:border-gray-500 block w-full sm:text-sm border-gray-300 dark:border-gray-900 rounded-md dark:bg-gray-500 dark:bg-opacity-20 focus:dark:bg-opacity-10 text-gray-200"
+                              className="shadow-sm focus:ring-gray-800 focus:border-gray-500 block w-full sm:text-sm border-gray-300 dark:border-gray-900 rounded-md dark:bg-gray-500 dark:bg-opacity-20 focus:dark:bg-opacity-10 text-gray-800 dark:text-gray-200"
                               placeholder="users"
                               aria-describedby="resource-name-description"
+                              autoComplete="off"
                             />
                           </div>
                           <p
