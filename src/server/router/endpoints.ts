@@ -8,13 +8,15 @@ import { createProtectedRouter } from "./context";
 export const endPointsRouter = createProtectedRouter().mutation("create", {
   input: z.object({
     name: z.string(),
-    route: z.string().default("/"),
+    route: z.string().transform((val) => (val === "" ? "/" : val)),
     schemas: z.array(
       z.object({
         name: z.string(),
         type: z.enum(allowedSchemaTypes),
       })
     ),
+    isList: z.boolean(),
+    listLimit: z.number().nullable(),
     resourceId: z.string(),
     method: z.enum(allowedEndPointMethods),
   }),
@@ -33,6 +35,8 @@ export const endPointsRouter = createProtectedRouter().mutation("create", {
         name: input.name,
         route: input.route,
         method: input.method,
+        isList: input.isList,
+        listLimit: input.listLimit,
         resourceId: resource.id,
       },
     });
