@@ -87,6 +87,8 @@ model EndPoint {
     resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
     resourceId String
     schemas    Schema[]
+    isList     Boolean  @default(false)
+    listLimit  Int?
 
     @@unique([resourceId, route, method])
 }
