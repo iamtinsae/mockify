@@ -8,7 +8,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Sofia Pro", ...fontFamily.sans],
+        sans: ["Roboto Mono", ...fontFamily.serif],
+        display: ["Roboto Mono", ...fontFamily.serif],
       },
     },
   },
